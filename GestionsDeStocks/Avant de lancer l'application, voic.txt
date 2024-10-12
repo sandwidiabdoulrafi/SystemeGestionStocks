@@ -1,0 +1,104 @@
+Avant de lancer l'application, voici les prérequis nécessaires :
+
+   1- Java Development Kit (JDK) :
+        Installez Java JDK 8 ou une version plus récente sur votre système.
+        Assurez-vous que la variable d'environnement JAVA_HOME est correctement configurée.
+
+   2- Base de données PostgreSQL :
+        Installez PostgreSQL sur votre système (version 9.6 ou ultérieure recommandée).
+        Créez une base de données nommée "gestion_reservations_voyages".
+        Créez un utilisateur avec les droits nécessaires sur cette base de données.
+
+   3-Driver JDBC pour PostgreSQL :
+        Téléchargez le driver JDBC PostgreSQL (postgresql-42.x.x.jar) depuis le site officiel de PostgreSQL.
+        Placez ce fichier .jar dans le répertoire "lib/" de votre projet.
+
+   4- Configuration de la base de données :
+        Dans le fichier src/donnees/ConnexionBaseDeDonnees.java, mettez à jour les informations de connexion :
+
+    private static final String URL = "jdbc:postgresql://localhost:5432/gestion_reservations_voyages";
+    private static final String UTILISATEUR = "votre_utilisateur";
+    private static final String MOT_DE_PASSE = "votre_mot_de_passe";
+
+   5-Création des tables dans la base de données :
+
+    Exécutez les requêtes SQL suivantes pour créer les tables nécessaires :
+
+        -- Table des agences de voyage
+CREATE TABLE public.agences_voyage (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    adresse VARCHAR(200) NOT NULL,
+    telephone VARCHAR(20) NOT NULL
+);
+
+-- Table des offres spéciales
+CREATE TABLE public.offres_speciales (
+    id SERIAL PRIMARY KEY,
+    agence_id INTEGER NOT NULL,
+    description TEXT NOT NULL,
+    date_debut DATE NOT NULL,
+    date_fin DATE NOT NULL,
+    reduction NUMERIC(5,2) NOT NULL,
+    FOREIGN KEY (agence_id) REFERENCES public.agences_voyage(id)
+);
+
+-- Table des passagers
+CREATE TABLE public.passagers (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    numero_passeport VARCHAR(20) NOT NULL
+);
+
+-- Table des passagers associés à une réservation
+CREATE TABLE public.reservation_passagers (
+    reservation_id INTEGER NOT NULL,
+    passager_id INTEGER NOT NULL,
+    PRIMARY KEY (reservation_id, passager_id),
+    FOREIGN KEY (passager_id) REFERENCES public.passagers(id),
+    FOREIGN KEY (reservation_id) REFERENCES public.reservations(id)
+);
+
+-- Table des réservations
+CREATE TABLE public.reservations (
+    id SERIAL PRIMARY KEY,
+    passager_id INTEGER NOT NULL,
+    vol_id VARCHAR(10) NOT NULL,
+    statut VARCHAR(20) NOT NULL,
+    FOREIGN KEY (passager_id) REFERENCES public.passagers(id),
+    FOREIGN KEY (vol_id) REFERENCES public.vols(numero_vol)
+);
+
+-- Table des vols
+CREATE TABLE public.vols (
+    numero_vol VARCHAR(10) PRIMARY KEY,
+    date_depart TIMESTAMP NOT NULL,
+    date_arrivee TIMESTAMP NOT NULL,
+    destination VARCHAR(100) NOT NULL,
+    places_disponibles INTEGER NOT NULL,
+    prix NUMERIC(10,2) NOT NULL
+);
+    
+
+
+
+   6- Configuration de JDBC pour IntelliJ IDEA :
+        Assurez-vous que le driver JDBC PostgreSQL (postgresql-42.x.x.jar) est inclus dans le lib/ de votre projet.
+        Le fichier JAR du pilote JDBC de la base de données (disponible sur le site officiel de la base de données) et ajoute-le manuellement à ton projet.
+	•Clique droit sur ton projet dans IntelliJ > Open Module Settings >Dependencies> Libraries > + > Choisis le fichier .jar.
+
+   
+
+    7- Environnement de développement :
+        Utilisez un IDE comme Eclipse, IntelliJ IDEA ou NetBeans pour faciliter le développement et l'exécution de l'application.
+        Configurez le projet dans votre IDE en incluant tous les fichiers source et le driver JDBC dans le classpath.
+
+  
+
+    8- Compilation :
+        Compilez tous les fichiers source Java dans le répertoire "src/".
+
+Une fois ces prérequis satisfaits, vous devriez être en mesure de lancer l'application en exécutant la classe Main.java.
+
+N'oubliez pas de gérer les exceptions et d'ajouter des journalisations (logging) appropriées pour faciliter le débogage en cas de problèmes lors de l'exécution.
