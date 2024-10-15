@@ -22,9 +22,9 @@ Avant de lancer l'application, voici les prérequis nécessaires :
 
    5-Création des tables dans la base de données :
 
-    Exécutez les requêtes SQL suivantes pour créer les tables nécessaires :
-
-        -- Table des agences de voyage
+    Exécutez les requêtes SQL suivantes pour créer le-- Table des agences de voyage
+CREATE TABLs tables nécessaires :
+  -- Table des agences de voyage
 CREATE TABLE public.agences_voyage (
     id SERIAL PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
