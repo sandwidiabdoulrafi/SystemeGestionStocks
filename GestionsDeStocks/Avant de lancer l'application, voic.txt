@@ -23,62 +23,118 @@ Avant de lancer l'application, voici les prérequis nécessaires :
    5-Création des tables dans la base de données :
 
     Exécutez les requêtes SQL suivantes pour créer le-- Table des agences de voyage
-CREATE TABLs tables nécessaires :
-  -- Table des agences de voyage
-CREATE TABLE public.agences_voyage (
-    id SERIAL PRIMARY KEY,
-    nom VARCHAR(100) NOT NULL,
-    adresse VARCHAR(200) NOT NULL,
-    telephone VARCHAR(20) NOT NULL
-);
+  -- Table: public.passagers
 
--- Table des offres spéciales
-CREATE TABLE public.offres_speciales (
-    id SERIAL PRIMARY KEY,
-    agence_id INTEGER NOT NULL,
-    description TEXT NOT NULL,
-    date_debut DATE NOT NULL,
-    date_fin DATE NOT NULL,
-    reduction NUMERIC(5,2) NOT NULL,
-    FOREIGN KEY (agence_id) REFERENCES public.agences_voyage(id)
-);
+-- DROP TABLE IF EXISTS public.passagers;
 
--- Table des passagers
-CREATE TABLE public.passagers (
-    id SERIAL PRIMARY KEY,
-    nom VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    numero_passeport VARCHAR(20) NOT NULL
-);
+CREATE TABLE IF NOT EXISTS public.passagers
+(
+    id integer NOT NULL DEFAULT nextval('passagers_id_seq'::regclass),
+    nom character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    email character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    numero_passeport character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT passagers_pkey PRIMARY KEY (id)
+)
 
--- Table des passagers associés à une réservation
-CREATE TABLE public.reservation_passagers (
-    reservation_id INTEGER NOT NULL,
-    passager_id INTEGER NOT NULL,
-    PRIMARY KEY (reservation_id, passager_id),
-    FOREIGN KEY (passager_id) REFERENCES public.passagers(id),
-    FOREIGN KEY (reservation_id) REFERENCES public.reservations(id)
-);
+TABLESPACE pg_default;
 
--- Table des réservations
-CREATE TABLE public.reservations (
-    id SERIAL PRIMARY KEY,
-    passager_id INTEGER NOT NULL,
-    vol_id VARCHAR(10) NOT NULL,
-    statut VARCHAR(20) NOT NULL,
-    FOREIGN KEY (passager_id) REFERENCES public.passagers(id),
-    FOREIGN KEY (vol_id) REFERENCES public.vols(numero_vol)
-);
+ALTER TABLE IF EXISTS public.passagers
+    OWNER to postgres;
 
--- Table des vols
-CREATE TABLE public.vols (
-    numero_vol VARCHAR(10) PRIMARY KEY,
-    date_depart TIMESTAMP NOT NULL,
-    date_arrivee TIMESTAMP NOT NULL,
-    destination VARCHAR(100) NOT NULL,
-    places_disponibles INTEGER NOT NULL,
-    prix NUMERIC(10,2) NOT NULL
-);
+-- Table: public.vols
+
+-- DROP TABLE IF EXISTS public.vols;
+
+CREATE TABLE IF NOT EXISTS public.vols
+(
+    numero_vol character varying(10) COLLATE pg_catalog."default" NOT NULL,
+    date_depart timestamp without time zone NOT NULL,
+    date_arrivee timestamp without time zone NOT NULL,
+    destination character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    places_disponibles integer NOT NULL,
+    prix numeric(10,2) NOT NULL,
+    CONSTRAINT vols_pkey PRIMARY KEY (numero_vol)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.vols
+    OWNER to postgres;
+
+-- Table: public.reservations
+
+-- DROP TABLE IF EXISTS public.reservations;
+
+CREATE TABLE IF NOT EXISTS public.reservations
+(
+    id integer NOT NULL DEFAULT nextval('reservations_id_seq'::regclass),
+    passager_id integer NOT NULL,
+    vol_id character varying(10) COLLATE pg_catalog."default" NOT NULL,
+    statut character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    agence_id integer NOT NULL, -- Ajout de la référence à l'agence
+    CONSTRAINT reservations_pkey PRIMARY KEY (id),
+    CONSTRAINT reservations_passager_id_fkey FOREIGN KEY (passager_id)
+        REFERENCES public.passagers (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT reservations_vol_id_fkey FOREIGN KEY (vol_id)
+        REFERENCES public.vols (numero_vol) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT reservations_agence_id_fkey FOREIGN KEY (agence_id)
+        REFERENCES public.agences_voyage (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.reservations
+    OWNER to postgres;
+
+-- Table: public.reservation_passagers
+
+-- DROP TABLE IF EXISTS public.reservation_passagers;
+
+CREATE TABLE IF NOT EXISTS public.reservation_passagers
+(
+    reservation_id integer NOT NULL,
+    passager_id integer NOT NULL,
+    CONSTRAINT reservation_passagers_pkey PRIMARY KEY (reservation_id, passager_id),
+    CONSTRAINT reservation_passagers_passager_id_fkey FOREIGN KEY (passager_id)
+        REFERENCES public.passagers (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT reservation_passagers_reservation_id_fkey FOREIGN KEY (reservation_id)
+        REFERENCES public.reservations (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.reservation_passagers
+    OWNER to postgres;
+
+-- Table: public.agences_voyage
+
+-- DROP TABLE IF EXISTS public.agences_voyage;
+
+CREATE TABLE IF NOT EXISTS public.agences_voyage
+(
+    id integer NOT NULL DEFAULT nextval('agences_voyage_id_seq'::regclass),
+    nom character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    adresse character varying(200) COLLATE pg_catalog."default" NOT NULL,
+    telephone character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    offres_speciales text COLLATE pg_catalog."default",
+    CONSTRAINT agences_voyage_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.agences_voyage
+    OWNER to postgres;
+
     
 
 
